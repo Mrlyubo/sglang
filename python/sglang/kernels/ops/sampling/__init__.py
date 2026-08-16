@@ -53,10 +53,21 @@ __all__ = ["top_k_renorm_probs", "top_p_renorm_probs"]
 
 
 # Migrated from srt/layers/utils/hash.py (RFC #29630, Phase 2.5).
+# JIT before Triton on CUDA: the entry point dispatches to the JIT kernel and
+# only falls back to the Triton reference on ROCm.
+register_kernel(
+    KernelSpec(
+        op="sampling.murmur_hash32",
+        backend=KernelBackend.JIT,
+        target="sglang.kernels.ops.sampling.murmur_hash:murmur_hash32",
+        description="MurmurHash3 x86_32 (CUDA JIT kernel).",
+    )
+)
 register_kernel(
     KernelSpec(
         op="sampling.murmur_hash32",
         backend=KernelBackend.TRITON,
         target="sglang.kernels.ops.sampling.murmur_hash:murmur_hash32",
+        description="MurmurHash3 x86_32 (Triton reference, ROCm fallback).",
     )
 )
